@@ -1,0 +1,9 @@
+version: 2.1
+
+orbs:
+  hello-world: circleci/hello-world@0.0.1
+
+workflows:
+  hello_world_workflow:
+    jobs:
+      - hello-world/hello
