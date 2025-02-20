@@ -1,9 +1,55 @@
 version: 2.1
 
-orbs:
-  hello-world: circleci/hello-world@0.0.1
+jobs:
+  build:
+    parameters:
+      MY_NAME_IN_CI:
+        type: string
+        default: "CircleCI"
+    docker:
+      - image: cimg/php:8.0.11-browsers
+    steps:
+      - run:
+          name: Greet the world from environment variable
+          command: echo "Hello, << parameters.MY_NAME_IN_CI >>!"
+      - run:
+          name: Run my cypress test cases
+          command: yarn install && yarn cypress run
+      - store_artifacts:
+          path: /tmp/logs
+
+
+
+  want-to-run-tests:
+    docker:
+      - image: cimg/base:2021.10
+    steps:
+      - run: echo "I want to run tests!"
 
 workflows:
-  hello_world_workflow:
+  version: 2
+  build-deploy:
     jobs:
-      - hello-world/hello
+      - build
+      - want-to-run-tests:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - main
+      - deploy-master-built-approval:
+          type: approval
+          message: "Please approve the deployment of the tag to develop."
+          filters:
+            branches:
+              only:
+                - main
+      - want-to-run-tests:
+          requires:
+            - build
+            - deploy-master-built-approval
+          filters:
+            branches:
+              only:
+                - main
