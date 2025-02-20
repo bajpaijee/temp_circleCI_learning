@@ -7,18 +7,19 @@ jobs:
         type: string
         default: "CircleCI"
     docker:
-      - image: cimg/php:8.0.11-browsers
+      - image: cimg/node:14.17
     steps:
       - run:
           name: Greet the world from environment variable
           command: echo "Hello, << parameters.MY_NAME_IN_CI >>!"
       - run:
-          name: Run my cypress test cases
-          command: yarn install && yarn cypress run
+          name: Install dependencies
+          command: yarn add express && yarn start
+      - run:
+          name: Hit the server request
+          command: curl http://localhost:3000/checkpath
       - store_artifacts:
           path: /tmp/logs
-
-
 
   want-to-run-tests:
     docker:
