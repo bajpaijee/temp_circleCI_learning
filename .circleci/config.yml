@@ -5,15 +5,19 @@ jobs:
     parameters:
       MY_NAME_IN_CI:
         type: string
+        default: "CircleCI"
     docker:
       - image: cimg/node:14.17
     steps:
+      - attach_workspace:
+            at: ./
+      - checkout
       - run:
           name: Greet the world from environment variable
           command: echo "Hello, << parameters.MY_NAME_IN_CI >>!"
       - run:
           name: Install dependencies
-          command: pwd && ls -la
+          command: pwd && ls -la && npm install && npm start
       - run:
           name: Hit the server request
           command: curl http://localhost:3000/checkpath
