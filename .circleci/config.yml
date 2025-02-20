@@ -17,9 +17,7 @@ jobs:
           command: echo "Hello, << parameters.MY_NAME_IN_CI >>!"
       - run:
           name: Install dependencies & Hit the server request
-          command: pwd && ls -la && npm install && npm start && curl http://localhost:3000/checkpath && exit 0
-      - store_artifacts:
-          path: /tmp/logs
+          command: pwd && ls -la && npm install && curl http://localhost:3000/checkpath
 
   want-to-run-tests:
     docker:
