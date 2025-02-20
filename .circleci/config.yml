@@ -36,14 +36,14 @@ workflows:
           filters:
             branches:
               only:
-                - main
+                - create-new-branch-to-set-ci
       - deploy-master-built-approval:
           type: approval
           message: "Please approve the deployment of the tag to develop."
           filters:
             branches:
               only:
-                - main
+                - create-new-branch-to-set-ci
       - want-to-run-tests:
           requires:
             - build
@@ -51,4 +51,4 @@ workflows:
           filters:
             branches:
               only:
-                - main
+                - create-new-branch-to-set-ci
