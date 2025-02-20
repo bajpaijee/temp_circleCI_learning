@@ -17,7 +17,7 @@ jobs:
           command: echo "Hello, << parameters.MY_NAME_IN_CI >>!"
       - run:
           name: Install dependencies & Hit the server request
-          command: pwd && ls -la && npm install && curl http://localhost:3000/checkpath
+          command: pwd && ls -la && npm install && curl https://www.google.com
 
   want-to-run-tests:
     docker:
