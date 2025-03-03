@@ -1,0 +1,69 @@
+name: release_test
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  check_version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch Tags
+        run: git fetch --tags
+      - name: Print Current Version
+        id: current_version
+        run: |
+          current_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "Current tag: $current_tag"
+          echo "::set-output name=current_tag::$current_tag"
+      - name: Increment Version
+        id: increment_version
+        run: |
+          current_tag=${{ steps.current_version.outputs.current_tag }}
+          IFS='.' read -r -a version_parts <<< "${current_tag#v}"
+          major=${version_parts[0]}
+          minor=${version_parts[1]}
+          patch=${version_parts[2]}
+          if [ "$patch" -lt 99 ]; then
+            patch=$((patch + 1))
+          else
+            patch=0
+            if [ "$minor" -lt 99 ]; then
+              minor=$((minor + 1))
+            else
+              minor=0
+              major=$((major + 1))
+            fi
+          fi
+          new_tag="v$major.$minor.$patch"
+          echo "New tag: $new_tag"
+          echo "::set-output name=new_tag::$new_tag"
+
+  release:
+    name: Release pushed tag
+    needs: check_version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Create New Tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          new_tag=${{ needs.check_version.outputs.new_tag }}
+          git tag "$new_tag"
+          git push origin "$new_tag"
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ needs.check_version.outputs.new_tag }}
+        run: |
+          gh release create "$tag" \
+            --repo="$GITHUB_REPOSITORY" \
+            --title="${tag#v}" \
+            --generate-notes
