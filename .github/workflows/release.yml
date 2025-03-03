@@ -20,11 +20,11 @@ jobs:
         run: |
           current_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
           echo "Current tag: $current_tag"
-          echo "::set-output name=current_tag::$current_tag"
+          echo "current_tag=$current_tag" >> $GITHUB_ENV
       - name: Increment Version
         id: increment_version
         run: |
-          current_tag=${{ steps.current_version.outputs.current_tag }}
+          current_tag=${{ env.current_tag }}
           IFS='.' read -r -a version_parts <<< "${current_tag#v}"
           major=${version_parts[0]}
           minor=${version_parts[1]}
@@ -42,7 +42,7 @@ jobs:
           fi
           new_tag="v$major.$minor.$patch"
           echo "New tag: $new_tag"
-          echo "::set-output name=new_tag::$new_tag"
+          echo "new_tag=$new_tag" >> $GITHUB_ENV
 
   release:
     name: Release pushed tag
@@ -55,13 +55,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          new_tag=${{ needs.check_version.outputs.new_tag }}
+          new_tag=${{ env.new_tag }}
           git tag "$new_tag"
           git push origin "$new_tag"
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ needs.check_version.outputs.new_tag }}
+          tag: ${{ env.new_tag }}
         run: |
           gh release create "$tag" \
             --repo="$GITHUB_REPOSITORY" \
