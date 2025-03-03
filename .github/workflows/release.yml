@@ -43,6 +43,7 @@ jobs:
           new_tag="v$major.$minor.$patch"
           echo "New tag: $new_tag"
           echo "new_tag=$new_tag" >> $GITHUB_ENV
+          echo "New tag set in GITHUB_ENV: $new_tag"
 
   release:
     name: Release pushed tag
@@ -55,6 +56,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "New tag from GITHUB_ENV: ${{ env.new_tag }}"
+          echo ${{ env.new_tag }}
           new_tag=${{ env.new_tag }}
           git tag "$new_tag"
           git push origin "$new_tag"
